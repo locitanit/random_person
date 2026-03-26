@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎲 Névkeverő</title>
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c1: #FF6B6B;
+    --c2: #FFE66D;
+    --c3: #4ECDC4;
+    --c4: #A8E6CF;
+    --c5: #FF8B94;
+    --c6: #B39DDB;
+    --c7: #FFD93D;
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --text: #f0f0f0;
+    --muted: #aaa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated background blobs */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+  }
+  body::before {
+    width: 500px; height: 500px;
+    background: var(--c6);
+    top: -100px; left: -100px;
+    animation: blob1 10s ease-in-out infinite alternate;
+  }
+  body::after {
+    width: 400px; height: 400px;
+    background: var(--c3);
+    bottom: -100px; right: -100px;
+    animation: blob2 12s ease-in-out infinite alternate;
+  }
+  @keyframes blob1 { to { transform: translate(60px, 80px) scale(1.2); } }
+  @keyframes blob2 { to { transform: translate(-60px, -40px) scale(0.9); } }
+
+  .wrapper {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .title {
+    font-family: 'Boogaloo', cursive;
+    font-size: clamp(3rem, 10vw, 5.5rem);
+    line-height: 1;
+    background: linear-gradient(135deg, var(--c1), var(--c2), var(--c3), var(--c5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+    animation: gradshift 4s ease infinite;
+    letter-spacing: -1px;
+    filter: drop-shadow(0 4px 12px rgba(255,107,107,0.3));
+  }
+  @keyframes gradshift {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  /* Input area */
+  .input-section {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 28px;
+    margin-bottom: 24px;
+    border: 2px solid rgba(255,255,255,0.06);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .input-label {
+    font-weight: 900;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c3);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .name-input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .name-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .name-input::placeholder { color: rgba(255,255,255,0.25); }
+  .name-input:focus {
+    border-color: var(--c3);
+    box-shadow: 0 0 0 4px rgba(78,205,196,0.15);
+  }
+
+  .btn-add {
+    background: var(--c3);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 20px;
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .btn-add:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(78,205,196,0.4); }
+  .btn-add:active { transform: scale(0.95); }
+
+  /* Name tags */
+  .name-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 50px;
+    align-items: flex-start;
+  }
+  .name-tags:empty::after {
+    content: 'Írj be neveket fent! 👆';
+    color: rgba(255,255,255,0.2);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 2.5;
+    width: 100%;
+    text-align: center;
+  }
+
+  .name-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: default;
+    user-select: none;
+  }
+  @keyframes popIn {
+    from { transform: scale(0) rotate(-10deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .name-tag .del {
+    background: rgba(0,0,0,0.2);
+    border: none;
+    color: inherit;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    line-height: 1;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .name-tag .del:hover { background: rgba(0,0,0,0.4); }
+
+  /* Tag color palette */
+  .tag-0 { background: #FF6B6B22; color: #FF6B6B; border: 1.5px solid #FF6B6B44; }
+  .tag-1 { background: #FFE66D22; color: #FFE66D; border: 1.5px solid #FFE66D44; }
+  .tag-2 { background: #4ECDC422; color: #4ECDC4; border: 1.5px solid #4ECDC444; }
+  .tag-3 { background: #A8E6CF22; color: #A8E6CF; border: 1.5px solid #A8E6CF44; }
+  .tag-4 { background: #FF8B9422; color: #FF8B94; border: 1.5px solid #FF8B9444; }
+  .tag-5 { background: #B39DDB22; color: #B39DDB; border: 1.5px solid #B39DDB44; }
+
+  /* Action buttons */
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .btn-shuffle {
+    flex: 1;
+    background: linear-gradient(135deg, var(--c1), var(--c5));
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 18px;
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+    box-shadow: 0 8px 30px rgba(255,107,107,0.35);
+    letter-spacing: 0.03em;
+  }
+  .btn-shuffle:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 14px 40px rgba(255,107,107,0.5);
+    filter: brightness(1.1);
+  }
+  .btn-shuffle:active { transform: scale(0.97); }
+  .btn-shuffle:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-shuffle.spinning .shuffle-icon {
+    display: inline-block;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-clear {
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 18px 22px;
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-clear:hover {
+    background: rgba(255,107,107,0.12);
+    border-color: rgba(255,107,107,0.3);
+    color: var(--c1);
+  }
+
+  /* Result */
+  .result-section {
+    display: none;
+  }
+  .result-section.visible {
+    display: block;
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-title {
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.1rem;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .result-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .result-item {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 2px solid rgba(255,255,255,0.05);
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: slideIn 0.35s ease forwards;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .result-number {
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-weight: 400;
+  }
+
+  .result-name {
+    font-weight: 900;
+    font-size: 1.15rem;
+    flex: 1;
+  }
+
+  .result-medal {
+    font-size: 1.4rem;
+  }
+
+  /* Confetti canvas */
+  #confetti-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="wrapper">
+  <header>
+    <div class="title">🎲 Névkeverő</div>
+    <div class="subtitle">Keverj össze bármennyi nevet!</div>
+  </header>
+
+  <div class="input-section">
+    <label class="input-label">✏️ Adj hozzá neveket</label>
+    <div class="name-input-row">
+      <input class="name-input" id="nameInput" type="text" placeholder="pl. Kovács János..." autocomplete="off" />
+      <button class="btn-add" id="addBtn" title="Hozzáadás">＋</button>
+    </div>
+    <div class="name-tags" id="nameTags"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-shuffle" id="shuffleBtn" disabled>
+      <span class="shuffle-icon">🔀</span> Keverés!
+    </button>
+    <button class="btn-clear" id="clearBtn" title="Összes törlése">🗑️</button>
+  </div>
+
+  <div class="result-section" id="resultSection">
+    <div class="result-title">🏆 A sorrend</div>
+    <ol class="result-list" id="resultList"></ol>
+  </div>
+</div>
+
+<script>
+const COLORS = ['tag-0','tag-1','tag-2','tag-3','tag-4','tag-5'];
+const RESULT_COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#A8E6CF','#FF8B94','#B39DDB','#FFD93D'];
+const MEDALS = ['🥇','🥈','🥉'];
+
+let names = [];
+let colorIdx = 0;
+
+const nameInput = document.getElementById('nameInput');
+const addBtn = document.getElementById('addBtn');
+const nameTags = document.getElementById('nameTags');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const clearBtn = document.getElementById('clearBtn');
+const resultSection = document.getElementById('resultSection');
+const resultList = document.getElementById('resultList');
+
+function addName() {
+  const val = nameInput.value.trim();
+  if (!val) return;
+  if (names.find(n => n.text.toLowerCase() === val.toLowerCase())) {
+    nameInput.classList.add('shake');
+    setTimeout(() => nameInput.classList.remove('shake'), 400);
+    nameInput.value = '';
+    return;
+  }
+
+  const id = Date.now();
+  const col = COLORS[colorIdx % COLORS.length];
+  colorIdx++;
+  names.push({ id, text: val, col });
+  renderTags();
+  nameInput.value = '';
+  nameInput.focus();
+  updateShuffleBtn();
+}
+
+function removeNameById(id) {
+  names = names.filter(n => n.id !== id);
+  renderTags();
+  updateShuffleBtn();
+}
+
+function renderTags() {
+  nameTags.innerHTML = '';
+  names.forEach(n => {
+    const tag = document.createElement('div');
+    tag.className = `name-tag ${n.col}`;
+    tag.innerHTML = `${escHtml(n.text)}<button class="del" data-id="${n.id}" title="Törlés">✕</button>`;
+    nameTags.appendChild(tag);
+  });
+  nameTags.querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', () => removeNameById(+btn.dataset.id));
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateShuffleBtn() {
+  shuffleBtn.disabled = names.length < 2;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+shuffleBtn.addEventListener('click', () => {
+  if (names.length < 2) return;
+
+  // Spin animation
+  shuffleBtn.classList.add('spinning');
+  setTimeout(() => shuffleBtn.classList.remove('spinning'), 700);
+
+  const shuffled = shuffle(names);
+  resultList.innerHTML = '';
+  resultSection.classList.remove('visible');
+
+  void resultSection.offsetWidth; // force reflow
+  resultSection.classList.add('visible');
+
+  shuffled.forEach((n, i) => {
+    const li = document.createElement('li');
+    li.className = 'result-item';
+    li.style.animationDelay = `${i * 80}ms`;
+
+    const numColor = RESULT_COLORS[i % RESULT_COLORS.length];
+    const numEl = document.createElement('div');
+    numEl.className = 'result-number';
+    numEl.style.background = numColor + '22';
+    numEl.style.color = numColor;
+    numEl.textContent = i + 1;
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'result-name';
+    nameEl.textContent = n.text;
+
+    const medal = document.createElement('div');
+    medal.className = 'result-medal';
+    medal.textContent = MEDALS[i] || '';
+
+    li.appendChild(numEl);
+    li.appendChild(nameEl);
+    li.appendChild(medal);
+    resultList.appendChild(li);
+  });
+
+  launchConfetti();
+});
+
+clearBtn.addEventListener('click', () => {
+  names = [];
+  colorIdx = 0;
+  renderTags();
+  updateShuffleBtn();
+  resultSection.classList.remove('visible');
+});
+
+addBtn.addEventListener('click', addName);
+nameInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') addName();
+});
+
+// --- Confetti ---
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+let confettiPieces = [];
+let animId;
+
+function launchConfetti() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  confettiPieces = [];
+  const COLS = ['#FF6B6B','#FFE66D','#4ECDC4','#A8E6CF','#FF8B94','#B39DDB','#FFD93D'];
+  for (let i = 0; i < 120; i++) {
+    confettiPieces.push({
+      x: Math.random() * canvas.width,
+      y: -10 - Math.random() * 200,
+      w: 8 + Math.random() * 8,
+      h: 5 + Math.random() * 5,
+      color: COLS[Math.floor(Math.random() * COLS.length)],
+      rot: Math.random() * Math.PI * 2,
+      vx: (Math.random() - 0.5) * 4,
+      vy: 2 + Math.random() * 4,
+      vr: (Math.random() - 0.5) * 0.2,
+    });
+  }
+  cancelAnimationFrame(animId);
+  animateConfetti();
+}
+
+function animateConfetti() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  confettiPieces.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.08; // gravity
+    p.rot += p.vr;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    ctx.restore();
+  });
+  confettiPieces = confettiPieces.filter(p => p.y < canvas.height + 20);
+  if (confettiPieces.length > 0) {
+    animId = requestAnimationFrame(animateConfetti);
+  } else {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+</script>
+</body>
+</html>
