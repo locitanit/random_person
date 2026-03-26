@@ -2,1513 +2,498 @@
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Ferde Hajítás – Ágyúpárbaj</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎲 Névkeverő</title>
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --c1: #FF6B6B;
+    --c2: #FFE66D;
+    --c3: #4ECDC4;
+    --c4: #A8E6CF;
+    --c5: #FF8B94;
+    --c6: #B39DDB;
+    --c7: #FFD93D;
+    --bg: #1a1a2e;
+    --card: #16213e;
+    --text: #f0f0f0;
+    --muted: #aaa;
+  }
 
-html, body {
-    width: 100%; height: 100%;
-    overflow: hidden;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #1a1a2e;
-    color: #e0e0e0;
-    touch-action: manipulation;
-    -webkit-user-select: none;
-    user-select: none;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-#game-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%; height: 100%;
-}
-
-#canvas-wrap {
-    flex: 1;
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
     position: relative;
-    min-height: 0;
-}
+  }
 
-#gameCanvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: #0f0f23;
-}
+  /* Animated background blobs */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+  }
+  body::before {
+    width: 500px; height: 500px;
+    background: var(--c6);
+    top: -100px; left: -100px;
+    animation: blob1 10s ease-in-out infinite alternate;
+  }
+  body::after {
+    width: 400px; height: 400px;
+    background: var(--c3);
+    bottom: -100px; right: -100px;
+    animation: blob2 12s ease-in-out infinite alternate;
+  }
+  @keyframes blob1 { to { transform: translate(60px, 80px) scale(1.2); } }
+  @keyframes blob2 { to { transform: translate(-60px, -40px) scale(0.9); } }
 
-#controls {
-    width: 100%;
-    background: #16213e;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 6px 10px;
-    gap: 6px;
-    overflow-y: auto;
-    border-top: 2px solid #0f3460;
-    max-height: 40vh;
-}
+  .wrapper {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
 
-/* Scoreboard */
-#scoreboard {
-    display: flex;
-    justify-content: space-around;
-    background: #0f3460;
-    border-radius: 8px;
-    padding: 6px 4px;
+  /* Header */
+  header {
     text-align: center;
-    font-size: 14px;
-    width: 100%;
-    order: -1;
-}
-
-#scoreboard .score-col { flex: 1; }
-#scoreboard .score-label { font-size: 11px; opacity: 0.7; margin-bottom: 2px; }
-#scoreboard .score-value { font-size: 28px; font-weight: bold; }
-#scoreboard .player-score { color: #4fc3f7; }
-#scoreboard .ai-score { color: #ef5350; }
-#scoreboard .vs { align-self: center; font-size: 16px; opacity: 0.5; padding-top: 12px; }
-
-/* Controls */
-.ctrl-group {
-    background: rgba(15,52,96,0.5);
-    border-radius: 8px;
-    padding: 8px 10px;
-    flex: 1;
-    min-width: 140px;
-}
-
-.ctrl-group label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-    margin-bottom: 6px;
-}
-
-.ctrl-group label .val {
-    font-weight: bold;
-    color: #4fc3f7;
-    font-size: 15px;
-}
-
-.ctrl-group input[type="range"] {
-    width: 100%;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 8px;
-    border-radius: 4px;
-    background: #1a1a2e;
-    outline: none;
-}
-
-.ctrl-group input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: #4fc3f7;
-    cursor: pointer;
-    border: 2px solid #fff;
-}
-
-.ctrl-group input[type="range"]::-moz-range-thumb {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: #4fc3f7;
-    cursor: pointer;
-    border: 2px solid #fff;
-}
-
-#fireBtn {
-    background: linear-gradient(135deg, #e53935, #ff7043);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 10px 10px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    letter-spacing: 2px;
+    margin-bottom: 40px;
+  }
+  .title {
+    font-family: 'Boogaloo', cursive;
+    font-size: clamp(3rem, 10vw, 5.5rem);
+    line-height: 1;
+    background: linear-gradient(135deg, var(--c1), var(--c2), var(--c3), var(--c5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+    animation: gradshift 4s ease infinite;
+    letter-spacing: -1px;
+    filter: drop-shadow(0 4px 12px rgba(255,107,107,0.3));
+  }
+  @keyframes gradshift {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
     text-transform: uppercase;
-    transition: transform 0.1s, box-shadow 0.1s;
-    box-shadow: 0 4px 15px rgba(229,57,53,0.4);
-    flex: 0 0 100%;
-}
+  }
 
-#fireBtn:active {
-    transform: scale(0.95);
-    box-shadow: 0 2px 8px rgba(229,57,53,0.6);
-}
+  /* Input area */
+  .input-section {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 28px;
+    margin-bottom: 24px;
+    border: 2px solid rgba(255,255,255,0.06);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
 
-#fireBtn:disabled {
-    opacity: 0.4;
+  .input-label {
+    font-weight: 900;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c3);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .name-input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .name-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .name-input::placeholder { color: rgba(255,255,255,0.25); }
+  .name-input:focus {
+    border-color: var(--c3);
+    box-shadow: 0 0 0 4px rgba(78,205,196,0.15);
+  }
+
+  .btn-add {
+    background: var(--c3);
+    color: #1a1a2e;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 20px;
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .btn-add:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(78,205,196,0.4); }
+  .btn-add:active { transform: scale(0.95); }
+
+  /* Name tags */
+  .name-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 50px;
+    align-items: flex-start;
+  }
+  .name-tags:empty::after {
+    content: 'Írj be neveket fent! 👆';
+    color: rgba(255,255,255,0.2);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 2.5;
+    width: 100%;
+    text-align: center;
+  }
+
+  .name-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: default;
+    user-select: none;
+  }
+  @keyframes popIn {
+    from { transform: scale(0) rotate(-10deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .name-tag .del {
+    background: rgba(0,0,0,0.2);
+    border: none;
+    color: inherit;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    line-height: 1;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .name-tag .del:hover { background: rgba(0,0,0,0.4); }
+
+  /* Tag color palette */
+  .tag-0 { background: #FF6B6B22; color: #FF6B6B; border: 1.5px solid #FF6B6B44; }
+  .tag-1 { background: #FFE66D22; color: #FFE66D; border: 1.5px solid #FFE66D44; }
+  .tag-2 { background: #4ECDC422; color: #4ECDC4; border: 1.5px solid #4ECDC444; }
+  .tag-3 { background: #A8E6CF22; color: #A8E6CF; border: 1.5px solid #A8E6CF44; }
+  .tag-4 { background: #FF8B9422; color: #FF8B94; border: 1.5px solid #FF8B9444; }
+  .tag-5 { background: #B39DDB22; color: #B39DDB; border: 1.5px solid #B39DDB44; }
+
+  /* Action buttons */
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .btn-shuffle {
+    flex: 1;
+    background: linear-gradient(135deg, var(--c1), var(--c5));
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 18px;
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+    box-shadow: 0 8px 30px rgba(255,107,107,0.35);
+    letter-spacing: 0.03em;
+  }
+  .btn-shuffle:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 14px 40px rgba(255,107,107,0.5);
+    filter: brightness(1.1);
+  }
+  .btn-shuffle:active { transform: scale(0.97); }
+  .btn-shuffle:disabled {
+    opacity: 0.35;
     cursor: not-allowed;
     transform: none;
-}
+    box-shadow: none;
+  }
+  .btn-shuffle.spinning .shuffle-icon {
+    display: inline-block;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-#statusMsg {
-    text-align: center;
-    font-size: 12px;
-    min-height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(15,52,96,0.5);
-    border-radius: 8px;
-    padding: 6px;
-    line-height: 1.3;
-    flex: 0 0 100%;
-}
-
-#physicsInfo {
-    font-size: 11px;
-    opacity: 0.7;
-    text-align: center;
-    background: rgba(15,52,96,0.3);
-    border-radius: 8px;
-    padding: 6px;
-    line-height: 1.5;
-    flex: 0 0 100%;
-}
-
-#bonusIndicator {
-    text-align: center;
-    font-size: 12px;
-    font-weight: bold;
-    color: #ffd740;
-    background: rgba(255,215,64,0.15);
-    border-radius: 8px;
-    padding: 5px;
-    flex: 0 0 100%;
-    display: none;
-}
-
-#bonusIndicator.active { display: block; }
-
-/* Overlay */
-#overlay {
-    display: none;
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.75);
-    z-index: 10;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-}
-
-#overlay.show { display: flex; }
-
-#overlay h1 {
-    font-size: 36px;
-    text-shadow: 0 0 20px rgba(255,255,255,0.3);
-}
-
-#overlay .subtitle {
-    font-size: 16px;
-    opacity: 0.8;
-    margin-bottom: 10px;
-}
-
-#newGameBtn {
-    background: linear-gradient(135deg, #43a047, #66bb6a);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 14px 32px;
-    font-size: 18px;
-    font-weight: bold;
+  .btn-clear {
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 18px 22px;
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.4rem;
     cursor: pointer;
-    letter-spacing: 1px;
-}
+    transition: all 0.15s;
+  }
+  .btn-clear:hover {
+    background: rgba(255,107,107,0.12);
+    border-color: rgba(255,107,107,0.3);
+    color: var(--c1);
+  }
 
-#startOverlay {
-    display: flex;
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.82);
-    z-index: 20;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 20px;
-    text-align: center;
-}
-
-#startOverlay h1 { font-size: 28px; margin-bottom: 4px; }
-#startOverlay .rules { font-size: 14px; opacity: 0.85; max-width: 400px; line-height: 1.6; }
-#startOverlay .formula { font-size: 13px; opacity: 0.6; font-style: italic; margin-top: 4px; }
-
-#startBtn {
-    background: linear-gradient(135deg, #e53935, #ff7043);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 16px 40px;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-    letter-spacing: 1px;
-}
-
-/* Quiz overlay */
-#quizOverlay {
+  /* Result */
+  .result-section {
     display: none;
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.80);
-    z-index: 15;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    padding: 20px;
-}
+  }
+  .result-section.visible {
+    display: block;
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
-#quizOverlay.show { display: flex; }
-
-#quizBox {
-    background: #16213e;
-    border: 2px solid #0f3460;
-    border-radius: 14px;
-    padding: 24px 28px;
-    max-width: 520px;
-    width: 90%;
+  .result-title {
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.1rem;
+    color: var(--muted);
     text-align: center;
-}
-
-#quizBox .quiz-title {
-    font-size: 15px;
-    opacity: 0.7;
-    margin-bottom: 8px;
-}
-
-#quizBox .quiz-question {
-    font-size: 17px;
-    font-weight: bold;
     margin-bottom: 16px;
-    line-height: 1.4;
-}
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
 
-#quizTimerBar {
-    width: 100%;
-    height: 6px;
-    background: #1a1a2e;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-#quizTimerFill {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #4fc3f7, #43a047);
-    border-radius: 3px;
-    transition: width 0.5s linear;
-}
-
-#quizAnswers {
+  .result-list {
+    list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-}
+    gap: 10px;
+  }
 
-#quizAnswers button {
-    background: rgba(15,52,96,0.7);
-    color: #e0e0e0;
-    border: 2px solid #0f3460;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 14px;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.15s, border-color 0.15s;
-}
+  .result-item {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 2px solid rgba(255,255,255,0.05);
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: slideIn 0.35s ease forwards;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
 
-#quizAnswers button:hover {
-    background: rgba(15,52,96,1);
-    border-color: #4fc3f7;
-}
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
 
-#quizAnswers button.correct {
-    background: rgba(67,160,71,0.5);
-    border-color: #43a047;
-    color: #fff;
-}
+  .result-number {
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-weight: 400;
+  }
 
-#quizAnswers button.wrong {
-    background: rgba(229,57,53,0.4);
-    border-color: #e53935;
-}
+  .result-name {
+    font-weight: 900;
+    font-size: 1.15rem;
+    flex: 1;
+  }
 
-#quizResult {
-    margin-top: 12px;
-    font-size: 14px;
-    font-weight: bold;
-    min-height: 20px;
-}
 
-/* Very small phones */
-@media (max-height: 500px) {
-    #controls { max-height: 35vh; padding: 4px 8px; gap: 4px; }
-    #fireBtn { padding: 8px; font-size: 16px; }
-}
 
-/* Landscape on small screens — sidebar layout */
-@media (min-aspect-ratio: 1/1) and (max-height: 700px) {
-    #game-container { flex-direction: row; }
-    #canvas-wrap { flex: 1; min-width: 0; min-height: unset; }
-    #controls {
-        width: 200px;
-        min-width: 170px;
-        flex-direction: column;
-        flex-wrap: nowrap;
-        padding: 8px;
-        gap: 6px;
-        border-top: none;
-        border-left: 2px solid #0f3460;
-        max-height: unset;
-        overflow-y: auto;
-    }
-    #scoreboard { width: auto; }
-    .ctrl-group { min-width: unset; }
-    #fireBtn { flex: 0 0 auto; padding: 10px 8px; font-size: 16px; }
-    #statusMsg { flex: 0 0 auto; min-height: 36px; font-size: 13px; }
-    #physicsInfo { flex: 0 0 auto; }
-    #bonusIndicator { flex: 0 0 auto; }
-}
 </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="canvas-wrap">
-        <canvas id="gameCanvas"></canvas>
-        <div id="overlay">
-            <h1 id="endTitle"></h1>
-            <div class="subtitle" id="endSubtitle"></div>
-            <button id="newGameBtn">Új Játék</button>
-        </div>
-        <div id="startOverlay">
-            <h1>🏴‍☠️ Ágyúpárbaj</h1>
-            <div class="rules">
-                Állítsd be az ágyúd <b>szögét</b> és a <b>puskapor mennyiségét</b> (kezdősebesség), majd tüzelj az ellenséges ágyúra!<br><br>
-                Minden forduló elején egy <b>kvízkérdést</b> kapsz – helyes válasz esetén bónuszt kaphatsz!<br><br>
-                Az ellenfél egyre pontosabban céloz.<br>
-                Aki először <b>5 találatot</b> ér el, az nyer!
-            </div>
-            <div class="formula">x(t) = v₀·cos(α)·t &nbsp;&nbsp;|&nbsp;&nbsp; y(t) = v₀·sin(α)·t − ½g·t²</div>
-            <button id="startBtn">Játék Indítása</button>
-        </div>
-        <div id="quizOverlay">
-            <div id="quizBox">
-                <div class="quiz-title">📝 Fizika kvíz – Ferde hajítás</div>
-                <div class="quiz-question" id="quizQuestion"></div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;"><div id="quizTimerBar" style="flex:1;"><div id="quizTimerFill"></div></div><span id="quizTimerText" style="font-weight:bold;font-size:14px;color:#4fc3f7;min-width:40px;"></span></div>
-                <div id="quizAnswers"></div>
-                <div id="quizResult"></div>
-            </div>
-        </div>
+<div class="wrapper">
+  <header>
+    <div class="title">🎲 Névkeverő</div>
+    <div class="subtitle">Keverj össze bármennyi nevet!</div>
+  </header>
+
+  <div class="input-section">
+    <label class="input-label">✏️ Adj hozzá neveket</label>
+    <div class="name-input-row">
+      <input class="name-input" id="nameInput" type="text" placeholder="pl. Kovács János..." autocomplete="off" />
+      <button class="btn-add" id="addBtn" title="Hozzáadás">＋</button>
     </div>
+    <div class="name-tags" id="nameTags"></div>
+  </div>
 
-    <div id="controls">
-        <div id="scoreboard">
-            <div class="score-col">
-                <div class="score-label">Játékos</div>
-                <div class="score-value player-score" id="playerScore">0</div>
-            </div>
-            <div class="vs">vs</div>
-            <div class="score-col">
-                <div class="score-label">Ellenfél</div>
-                <div class="score-value ai-score" id="aiScore">0</div>
-            </div>
-        </div>
+  <div class="actions">
+    <button class="btn-shuffle" id="shuffleBtn" disabled>
+      <span class="shuffle-icon">🔀</span> Keverés!
+    </button>
+    <button class="btn-clear" id="clearBtn" title="Összes törlése">🗑️</button>
+  </div>
 
-        <div class="ctrl-group">
-            <label>Szög <span class="val" id="angleVal">45°</span></label>
-            <input type="range" id="angleSlider" min="5" max="85" value="45" step="1">
-        </div>
-
-        <div class="ctrl-group">
-            <label>Sebesség <span class="val" id="speedVal">50 m/s</span></label>
-            <input type="range" id="speedSlider" min="10" max="100" value="50" step="1">
-        </div>
-
-        <button id="fireBtn">🔥 Tűz!</button>
-
-        <div id="statusMsg">Állítsd be a szöget és sebességet, majd tüzelj!</div>
-
-        <div id="bonusIndicator"></div>
-
-        <div id="physicsInfo">
-            g = 9,81 m/s² · Légellenállás: nincs<br>
-            x(t) = v₀·cos(α)·t<br>
-            y(t) = v₀·sin(α)·t − ½g·t²<br>
-            Pálya: parabola (ferde hajítás)
-        </div>
-    </div>
+  <div class="result-section" id="resultSection">
+    <div class="result-title">A sorrend</div>
+    <ol class="result-list" id="resultList"></ol>
+  </div>
 </div>
 
 <script>
-(function() {
-    'use strict';
+const COLORS = ['tag-0','tag-1','tag-2','tag-3','tag-4','tag-5'];
+const RESULT_COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#A8E6CF','#FF8B94','#B39DDB','#FFD93D'];
+
+
+let names = [];
+let colorIdx = 0;
+
+const nameInput = document.getElementById('nameInput');
+const addBtn = document.getElementById('addBtn');
+const nameTags = document.getElementById('nameTags');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const clearBtn = document.getElementById('clearBtn');
+const resultSection = document.getElementById('resultSection');
+const resultList = document.getElementById('resultList');
+
+function addName() {
+  const val = nameInput.value.trim();
+  if (!val) return;
+  if (names.find(n => n.text.toLowerCase() === val.toLowerCase())) {
+    nameInput.classList.add('shake');
+    setTimeout(() => nameInput.classList.remove('shake'), 400);
+    nameInput.value = '';
+    return;
+  }
+
+  const id = Date.now();
+  const col = COLORS[colorIdx % COLORS.length];
+  colorIdx++;
+  names.push({ id, text: val, col });
+  renderTags();
+  nameInput.value = '';
+  nameInput.focus();
+  updateShuffleBtn();
+}
+
+function removeNameById(id) {
+  names = names.filter(n => n.id !== id);
+  renderTags();
+  updateShuffleBtn();
+}
+
+function renderTags() {
+  nameTags.innerHTML = '';
+  names.forEach(n => {
+    const tag = document.createElement('div');
+    tag.className = `name-tag ${n.col}`;
+    tag.innerHTML = `${escHtml(n.text)}<button class="del" data-id="${n.id}" title="Törlés">✕</button>`;
+    nameTags.appendChild(tag);
+  });
+  nameTags.querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', () => removeNameById(+btn.dataset.id));
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateShuffleBtn() {
+  shuffleBtn.disabled = names.length < 2;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+shuffleBtn.addEventListener('click', () => {
+  if (names.length < 2) return;
+
+  // Spin animation
+  shuffleBtn.classList.add('spinning');
+  setTimeout(() => shuffleBtn.classList.remove('spinning'), 700);
+
+  const shuffled = shuffle(names);
+  resultList.innerHTML = '';
+  resultSection.classList.remove('visible');
+
+  void resultSection.offsetWidth; // force reflow
+  resultSection.classList.add('visible');
+
+  shuffled.forEach((n, i) => {
+    const li = document.createElement('li');
+    li.className = 'result-item';
+    li.style.animationDelay = `${i * 80}ms`;
+
+    const numColor = RESULT_COLORS[i % RESULT_COLORS.length];
+    const numEl = document.createElement('div');
+    numEl.className = 'result-number';
+    numEl.style.background = numColor + '22';
+    numEl.style.color = numColor;
+    numEl.textContent = i + 1;
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'result-name';
+    nameEl.textContent = n.text;
+
+    li.appendChild(numEl);
+    li.appendChild(nameEl);
+    resultList.appendChild(li);
+  });
 
-    // === DOM refs ===
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const angleSlider = document.getElementById('angleSlider');
-    const speedSlider = document.getElementById('speedSlider');
-    const angleVal = document.getElementById('angleVal');
-    const speedVal = document.getElementById('speedVal');
-    const fireBtn = document.getElementById('fireBtn');
-    const playerScoreEl = document.getElementById('playerScore');
-    const aiScoreEl = document.getElementById('aiScore');
-    const statusMsg = document.getElementById('statusMsg');
-    const overlay = document.getElementById('overlay');
-    const endTitle = document.getElementById('endTitle');
-    const endSubtitle = document.getElementById('endSubtitle');
-    const newGameBtn = document.getElementById('newGameBtn');
-    const startOverlay = document.getElementById('startOverlay');
-    const startBtn = document.getElementById('startBtn');
-    const quizOverlay = document.getElementById('quizOverlay');
-    const quizQuestion = document.getElementById('quizQuestion');
-    const quizAnswers = document.getElementById('quizAnswers');
-    const quizResult = document.getElementById('quizResult');
-    const quizTimerFill = document.getElementById('quizTimerFill');
-    const quizTimerText = document.getElementById('quizTimerText');
-    const bonusIndicator = document.getElementById('bonusIndicator');
 
-    // === Constants ===
-    const G = 9.81;
-    const WIN_SCORE = 5;
-    const CANNON_RADIUS = 14;
-    const BARREL_LEN = 28;
-    const BALL_RADIUS = 5;
-    const HIT_RADIUS_WORLD = 4;
-    const DT = 0.03;
-    const TRAIL_MAX = 500;
-    const QUIZ_TIME = 30; // seconds
+});
 
-    // === Quiz bank ===
-    const QUIZ_BANK = [
-        {
-            q: "Mi a ferde hajítás vízszintes összetevőjének képlete?",
-            a: ["x(t) = v₀·cos(α)·t", "x(t) = v₀·sin(α)·t", "x(t) = ½·g·t²", "x(t) = v₀·t²"],
-            correct: 0
-        },
-        {
-            q: "Mi a ferde hajítás függőleges összetevőjének képlete?",
-            a: ["y(t) = v₀·cos(α)·t − ½g·t²", "y(t) = v₀·sin(α)·t − ½g·t²", "y(t) = v₀·sin(α)·t + ½g·t²", "y(t) = v₀·t − g·t²"],
-            correct: 1
-        },
-        {
-            q: "Milyen szögnél éri el a maximális hatótávolságot egy ferde hajítás (légellenállás nélkül)?",
-            a: ["30°", "60°", "45°", "90°"],
-            correct: 2
-        },
-        {
-            q: "Mi a nehézségi gyorsulás értéke a Föld felszínén?",
-            a: ["10,00 m/s²", "9,81 m/s²", "8,91 m/s²", "11,2 m/s²"],
-            correct: 1
-        },
-        {
-            q: "Hogyan változik a vízszintes sebesség ferde hajítás során (légellenállás nélkül)?",
-            a: ["Állandóan csökken", "Állandóan nő", "Nem változik (állandó)", "Először nő, aztán csökken"],
-            correct: 2
-        },
-        {
-            q: "Milyen pályát ír le a test ferde hajítás során légellenállás nélkül?",
-            a: ["Egyenes vonalat", "Kört", "Parabolát", "Ellipszist"],
-            correct: 2
-        },
-        {
-            q: "Mi történik a függőleges sebességgel a pálya legfelső pontján?",
-            a: ["Maximális értékű", "Nulla", "Negatív", "Megegyezik a kezdősebességgel"],
-            correct: 1
-        },
-        {
-            q: "Ha megduplázzuk a kezdősebességet, hogyan változik a hatótávolság (légellenállás nélkül)?",
-            a: ["Kétszeresére nő", "Négyszeresére nő", "Nyolcszorosára nő", "Nem változik"],
-            correct: 1
-        },
-        {
-            q: "Mekkora a ferde hajítás maximális magassága? (H = ?)",
-            a: ["H = v₀²·sin²(α) / (2g)", "H = v₀·sin(α) / g", "H = v₀²·cos²(α) / (2g)", "H = v₀² / (2g)"],
-            correct: 0
-        },
-        {
-            q: "Mi a repülési idő képlete ferde hajításnál, ha a start és cél egy magasságban van?",
-            a: ["T = v₀ / g", "T = 2·v₀·sin(α) / g", "T = v₀·cos(α) / g", "T = 2·v₀ / g"],
-            correct: 1
-        },
-        {
-            q: "Mekkora szögnél ad azonos hatótávolságot a ferde hajítás, mint 30°-nál?",
-            a: ["45°", "60°", "75°", "90°"],
-            correct: 1
-        },
-        {
-            q: "Ha v₀ = 20 m/s és α = 30°, mekkora a vízszintes kezdősebesség?",
-            a: ["10 m/s", "17,3 m/s", "20 m/s", "14,1 m/s"],
-            correct: 1
-        },
-        {
-            q: "Ha v₀ = 40 m/s és α = 45°, kb. mekkora a hatótávolság?",
-            a: ["~82 m", "~163 m", "~40 m", "~326 m"],
-            correct: 1
-        },
-        {
-            q: "Ferde hajításnál melyik erő hat a testre repülés közben (légellenállás nélkül)?",
-            a: ["Csak a gravitáció (lefelé)", "Gravitáció és centripetális erő", "Gravitáció és a kezdőlökés ereje", "Nem hat rá erő"],
-            correct: 0
-        },
-        {
-            q: "Mi a hatótávolság képlete ferde hajításnál (sík terepen)?",
-            a: ["R = v₀²·sin(2α) / g", "R = v₀²·cos(2α) / g", "R = 2·v₀²·sin(α) / g", "R = v₀²·sin(α) / (2g)"],
-            correct: 0
-        },
-        {
-            q: "Ha v₀ = 50 m/s és α = 45°, kb. mennyi a maximális magasság?",
-            a: ["~32 m", "~64 m", "~128 m", "~16 m"],
-            correct: 1
-        },
-        {
-            q: "A ferde hajítás mely komponense analóg a szabadesés mozgásával?",
-            a: ["A vízszintes komponens", "A függőleges komponens", "Mindkettő", "Egyik sem"],
-            correct: 1
-        },
-        {
-            q: "Ha egy lövedéket 60°-os szögben lövünk ki, a becsapódás szöge mekkora lesz (sík terepen)?",
-            a: ["30°", "45°", "60°", "90°"],
-            correct: 2
-        },
-        {
-            q: "Ferde hajításnál mi a gyorsulás vízszintes komponense (légellenállás nélkül)?",
-            a: ["g", "g·cos(α)", "0", "g·sin(α)"],
-            correct: 2
-        },
-        {
-            q: "Két test azonos kezdősebességgel, de 25° és 65° szögben indul. Melyik repül tovább?",
-            a: ["A 25°-os", "A 65°-os", "Azonos távolságra jutnak", "Nem lehet eldönteni"],
-            correct: 2
-        }
-    ];
+clearBtn.addEventListener('click', () => {
+  names = [];
+  colorIdx = 0;
+  renderTags();
+  updateShuffleBtn();
+  resultSection.classList.remove('visible');
+});
 
-    // === Game state ===
-    let W, H;
-    let terrain = [];
-    let playerCannon = { x: 0, y: 0 };
-    let aiCannon = { x: 0, y: 0 };
-    let playerScore = 0;
-    let aiScore = 0;
-    let roundNumber = 0;
-    let aiShotCount = 0;
-    let gamePhase = 'idle'; // idle, quiz, playerFiring, aiWait, aiFiring, roundEnd, gameOver
-    let projectiles = []; // array of { x, y, vx, vy, trail, color }
-    let explosions = [];
-    let trails = [];
-    let animFrameId = null;
-    let stars = []; // pre-generated stars
+addBtn.addEventListener('click', addName);
+nameInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') addName();
+});
 
-    // Active bonus for current round
-    let activeBonus = null; // 'distance' | 'trajectory' | 'triple' | null
 
-    // Quiz state
-    let quizTimer = null;
-    let quizTimeLeft = 0;
-    let quizTickInterval = null;
-    let quizAnswered = false;
-    let usedQuizIndices = [];
-
-    const WORLD_W = 200;
-    let WORLD_H = 120;
-    let scale = 1;
-
-    // === Stars generation ===
-    function generateStars() {
-        stars = [];
-        for (let i = 0; i < 150; i++) {
-            stars.push({
-                x: Math.random(),
-                y: Math.random() * 0.65,
-                size: 0.8 + Math.random() * 1.5,
-                brightness: 0.25 + Math.random() * 0.65
-            });
-        }
-    }
-
-    // === Resize ===
-    function resize() {
-        const wrap = canvas.parentElement;
-        const rect = wrap.getBoundingClientRect();
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        W = Math.floor(rect.width);
-        H = Math.floor(rect.height);
-        canvas.width = W * dpr;
-        canvas.height = H * dpr;
-        canvas.style.width = W + 'px';
-        canvas.style.height = H + 'px';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        scale = W / WORLD_W;
-        WORLD_H = H / scale;
-
-        draw();
-    }
-
-    // === Coordinate transforms ===
-    function worldToScreen(wx, wy) {
-        return { x: wx * scale, y: H - wy * scale };
-    }
-
-    function screenToWorld(sx, sy) {
-        return { x: sx / scale, y: (H - sy) / scale };
-    }
-
-    // === Terrain generation (midpoint displacement) ===
-    function generateTerrain() {
-        const n = 128;
-        const heights = new Array(n + 1);
-
-        const baseH = WORLD_H * 0.10;
-        const variation = WORLD_H * 0.38;
-
-        heights[0] = baseH + Math.random() * variation * 0.6;
-        heights[n] = baseH + Math.random() * variation * 0.6;
-
-        function subdivide(l, r, roughness) {
-            if (r - l <= 1) return;
-            const mid = Math.floor((l + r) / 2);
-            const avg = (heights[l] + heights[r]) / 2;
-            const displacement = (Math.random() - 0.5) * roughness * (r - l) / n * variation;
-            heights[mid] = Math.max(baseH * 0.2, Math.min(avg + displacement, WORLD_H * 0.52));
-            subdivide(l, mid, roughness * 0.7);
-            subdivide(mid, r, roughness * 0.7);
-        }
-
-        subdivide(0, n, 2.2);
-
-        for (let i = 0; i <= n; i++) {
-            if (heights[i] === undefined) heights[i] = baseH;
-        }
-
-        for (let pass = 0; pass < 2; pass++) {
-            for (let i = 1; i < n; i++) {
-                heights[i] = (heights[i - 1] + heights[i] + heights[i + 1]) / 3;
-            }
-        }
-
-        terrain = heights;
-    }
-
-    function getTerrainHeight(worldX) {
-        const n = terrain.length - 1;
-        const t = (worldX / WORLD_W) * n;
-        const i = Math.floor(t);
-        const f = t - i;
-        if (i < 0) return terrain[0];
-        if (i >= n) return terrain[n];
-        return terrain[i] * (1 - f) + terrain[i + 1] * f;
-    }
-
-    // === Place cannons ===
-    function placeCannons() {
-        const pX = WORLD_W * (0.05 + Math.random() * 0.12);
-        playerCannon.x = pX;
-        playerCannon.y = getTerrainHeight(pX);
-
-        const aX = WORLD_W * (0.83 + Math.random() * 0.12);
-        aiCannon.x = aX;
-        aiCannon.y = getTerrainHeight(aX);
-
-        const maxAllowedHeight = WORLD_H * 0.50;
-        const n = terrain.length - 1;
-        const iLeft = Math.ceil((pX / WORLD_W) * n);
-        const iRight = Math.floor((aX / WORLD_W) * n);
-        for (let i = iLeft; i <= iRight; i++) {
-            if (terrain[i] > maxAllowedHeight) {
-                terrain[i] = maxAllowedHeight * (0.7 + Math.random() * 0.2);
-            }
-        }
-
-        playerCannon.y = getTerrainHeight(pX);
-        aiCannon.y = getTerrainHeight(aX);
-    }
-
-    // === Drawing ===
-    function drawSky() {
-        const grad = ctx.createLinearGradient(0, 0, 0, H);
-        grad.addColorStop(0, '#0b0b2e');
-        grad.addColorStop(0.5, '#162447');
-        grad.addColorStop(1, '#1f4068');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, W, H);
-
-        // Stars (pre-generated random positions)
-        for (const s of stars) {
-            ctx.fillStyle = `rgba(255,255,255,${s.brightness})`;
-            ctx.beginPath();
-            ctx.arc(s.x * W, s.y * H, s.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function drawTerrain() {
-        const n = terrain.length - 1;
-        ctx.beginPath();
-        const first = worldToScreen(0, terrain[0]);
-        ctx.moveTo(first.x, first.y);
-
-        for (let i = 1; i <= n; i++) {
-            const wx = (i / n) * WORLD_W;
-            const p = worldToScreen(wx, terrain[i]);
-            ctx.lineTo(p.x, p.y);
-        }
-
-        ctx.lineTo(W, H);
-        ctx.lineTo(0, H);
-        ctx.closePath();
-
-        const grad = ctx.createLinearGradient(0, H * 0.4, 0, H);
-        grad.addColorStop(0, '#2e7d32');
-        grad.addColorStop(0.4, '#1b5e20');
-        grad.addColorStop(1, '#0d3010');
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(first.x, first.y);
-        for (let i = 1; i <= n; i++) {
-            const wx = (i / n) * WORLD_W;
-            const p = worldToScreen(wx, terrain[i]);
-            ctx.lineTo(p.x, p.y);
-        }
-        ctx.strokeStyle = '#4caf50';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
-
-    function drawCannon(cannon, angle, color, facingRight) {
-        const pos = worldToScreen(cannon.x, cannon.y);
-        const dir = facingRight ? 1 : -1;
-
-        const wheelRpx = Math.max(6, CANNON_RADIUS * 0.7);
-        ctx.fillStyle = '#5d4037';
-        ctx.beginPath();
-        ctx.arc(pos.x - 8 * dir * 0.3, pos.y + 2, wheelRpx, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        const barrelLen = Math.max(20, BARREL_LEN);
-        const angleRad = angle * Math.PI / 180;
-        const bx = pos.x + dir * Math.cos(angleRad) * barrelLen;
-        const by = pos.y - Math.sin(angleRad) * barrelLen;
-
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y - 2);
-        ctx.lineTo(bx, by);
-        ctx.strokeStyle = '#616161';
-        ctx.lineWidth = 7;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y - 2);
-        ctx.lineTo(bx, by);
-        ctx.strokeStyle = '#9e9e9e';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y - 2, CANNON_RADIUS * 0.65, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.fillStyle = '#424242';
-        ctx.beginPath();
-        ctx.arc(bx, by, 4, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function drawProjectiles() {
-        for (const proj of projectiles) {
-            const pos = worldToScreen(proj.x, proj.y);
-
-            // Trail
-            if (proj.trail.length > 1) {
-                ctx.beginPath();
-                const t0 = worldToScreen(proj.trail[0].x, proj.trail[0].y);
-                ctx.moveTo(t0.x, t0.y);
-                for (let i = 1; i < proj.trail.length; i++) {
-                    const tp = worldToScreen(proj.trail[i].x, proj.trail[i].y);
-                    ctx.lineTo(tp.x, tp.y);
-                }
-                ctx.strokeStyle = proj.color || 'rgba(255,200,50,0.6)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([4, 4]);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            // Ball
-            ctx.fillStyle = '#ff6f00';
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, BALL_RADIUS, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#ffca28';
-            ctx.beginPath();
-            ctx.arc(pos.x - 1, pos.y - 1, BALL_RADIUS * 0.5, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function drawTrails() {
-        for (const trail of trails) {
-            if (trail.points.length < 2) continue;
-            ctx.beginPath();
-            const t0 = worldToScreen(trail.points[0].x, trail.points[0].y);
-            ctx.moveTo(t0.x, t0.y);
-            for (let i = 1; i < trail.points.length; i++) {
-                const tp = worldToScreen(trail.points[i].x, trail.points[i].y);
-                ctx.lineTo(tp.x, tp.y);
-            }
-            ctx.strokeStyle = trail.color;
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([3, 5]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-        }
-    }
-
-    function drawExplosions() {
-        for (const e of explosions) {
-            const pos = worldToScreen(e.x, e.y);
-            const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, e.r * scale);
-            if (e.hit) {
-                grad.addColorStop(0, 'rgba(255,255,200,0.9)');
-                grad.addColorStop(0.3, 'rgba(255,160,0,0.7)');
-                grad.addColorStop(0.7, 'rgba(255,60,0,0.4)');
-                grad.addColorStop(1, 'rgba(255,0,0,0)');
-            } else {
-                grad.addColorStop(0, 'rgba(200,200,150,0.6)');
-                grad.addColorStop(0.5, 'rgba(139,119,101,0.3)');
-                grad.addColorStop(1, 'rgba(100,80,60,0)');
-            }
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, e.r * scale, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function drawFlags() {
-        const pp = worldToScreen(playerCannon.x, playerCannon.y);
-        ctx.fillStyle = '#4fc3f7';
-        ctx.fillRect(pp.x - 2, pp.y - 30, 4, 14);
-        ctx.fillStyle = '#4fc3f7';
-        ctx.beginPath();
-        ctx.moveTo(pp.x + 2, pp.y - 30);
-        ctx.lineTo(pp.x + 14, pp.y - 25);
-        ctx.lineTo(pp.x + 2, pp.y - 20);
-        ctx.fill();
-
-        const ap = worldToScreen(aiCannon.x, aiCannon.y);
-        ctx.fillStyle = '#ef5350';
-        ctx.fillRect(ap.x - 2, ap.y - 30, 4, 14);
-        ctx.fillStyle = '#ef5350';
-        ctx.beginPath();
-        ctx.moveTo(ap.x + 2, ap.y - 30);
-        ctx.lineTo(ap.x + 14, ap.y - 25);
-        ctx.lineTo(ap.x + 2, ap.y - 20);
-        ctx.fill();
-    }
-
-    // === Bonus drawing ===
-    function updateDistanceBonus() {
-        if (activeBonus !== 'distance') return;
-        const dx = Math.abs(playerCannon.x - aiCannon.x);
-        const dy = playerCannon.y - aiCannon.y;
-        bonusIndicator.textContent = `📏 Távolság: Δx = ${dx.toFixed(1)}m  |  Δy = ${Math.abs(dy).toFixed(1)}m`;
-    }
-
-    function drawTrajectoryPreview() {
-        if (activeBonus !== 'trajectory' || gamePhase !== 'idle') return;
-        // Simulate first third of trajectory
-        const angle = parseInt(angleSlider.value);
-        const speed = parseInt(speedSlider.value);
-        const rad = angle * Math.PI / 180;
-        const muzzle = getMuzzlePos(playerCannon, angle, true);
-        const vx = speed * Math.cos(rad);
-        const vy = speed * Math.sin(rad);
-
-        // Find total flight time to estimate 1/3
-        const totalT = 2 * vy / G;
-        const thirdT = totalT / 3;
-
-        const points = [];
-        let sx = muzzle.x, sy = muzzle.y, svx = vx, svy = vy;
-        let t = 0;
-        while (t < thirdT && points.length < 200) {
-            points.push({ x: sx, y: sy });
-            svy -= G * DT;
-            sx += svx * DT;
-            sy += svy * DT;
-            t += DT;
-            if (sy <= getTerrainHeight(sx)) break;
-        }
-
-        if (points.length > 1) {
-            ctx.beginPath();
-            const p0 = worldToScreen(points[0].x, points[0].y);
-            ctx.moveTo(p0.x, p0.y);
-            for (let i = 1; i < points.length; i++) {
-                const p = worldToScreen(points[i].x, points[i].y);
-                ctx.lineTo(p.x, p.y);
-            }
-            ctx.strokeStyle = 'rgba(255,215,64,0.5)';
-            ctx.lineWidth = 2.5;
-            ctx.setLineDash([6, 4]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            // End marker
-            const last = worldToScreen(points[points.length - 1].x, points[points.length - 1].y);
-            ctx.fillStyle = 'rgba(255,215,64,0.6)';
-            ctx.beginPath();
-            ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function draw() {
-        if (!W || !H) return;
-        ctx.clearRect(0, 0, W, H);
-        drawSky();
-        drawTerrain();
-        drawTrails();
-        drawFlags();
-
-        const playerAngle = parseInt(angleSlider.value);
-        drawCannon(playerCannon, playerAngle, '#4fc3f7', true);
-        drawCannon(aiCannon, aiCannonAngle, '#ef5350', false);
-
-        drawTrajectoryPreview();
-        drawProjectiles();
-        drawExplosions();
-    }
-
-    // === Physics / Projectile simulation ===
-    let aiCannonAngle = 45;
-
-    function getMuzzlePos(cannon, angle, facingRight) {
-        const angleRad = angle * Math.PI / 180;
-        const dir = facingRight ? 1 : -1;
-        const barrelWorld = BARREL_LEN / scale;
-        return {
-            x: cannon.x + dir * Math.cos(angleRad) * barrelWorld,
-            y: cannon.y + Math.sin(angleRad) * barrelWorld
-        };
-    }
-
-    function fireProjectile(cannon, angle, speed, facingRight, color) {
-        const muzzle = getMuzzlePos(cannon, angle, facingRight);
-        const angleRad = angle * Math.PI / 180;
-        const dir = facingRight ? 1 : -1;
-        const proj = {
-            x: muzzle.x,
-            y: muzzle.y,
-            vx: dir * speed * Math.cos(angleRad),
-            vy: speed * Math.sin(angleRad),
-            trail: [{ x: muzzle.x, y: muzzle.y }],
-            color: color
-        };
-        projectiles.push(proj);
-    }
-
-    function fireTriple(cannon, angle, speed, facingRight, color) {
-        const offsets = [-3, 0, 3];
-        for (const da of offsets) {
-            fireProjectile(cannon, angle + da, speed, facingRight, color);
-        }
-    }
-
-    function updateProjectiles() {
-        // Returns: { result: 'hit'|'terrain'|'oob'|'flying', proj: ... }
-        // We check all projectiles. If any hits, return hit. If all done (none flying), return the last result.
-        let anyFlying = false;
-        let hitResult = null;
-
-        for (let i = projectiles.length - 1; i >= 0; i--) {
-            const proj = projectiles[i];
-            proj.vy -= G * DT;
-            proj.x += proj.vx * DT;
-            proj.y += proj.vy * DT;
-
-            if (proj.trail.length < TRAIL_MAX) {
-                proj.trail.push({ x: proj.x, y: proj.y });
-            }
-
-            // Check hit
-            const target = (gamePhase === 'playerFiring') ? aiCannon : playerCannon;
-            const dx = proj.x - target.x;
-            const dy = proj.y - target.y;
-            if (Math.sqrt(dx * dx + dy * dy) < HIT_RADIUS_WORLD) {
-                hitResult = { result: 'hit', proj: proj };
-                // Remove this projectile (hit)
-                projectiles.splice(i, 1);
-                continue;
-            }
-
-            // Check terrain
-            const terrainY = getTerrainHeight(proj.x);
-            if (proj.y <= terrainY) {
-                proj.y = terrainY;
-                addExplosion(proj.x, proj.y, false);
-                trails.push({ points: [...proj.trail], color: proj.color.replace('0.6', '0.25') });
-                projectiles.splice(i, 1);
-                continue;
-            }
-
-            // Check OOB
-            if (proj.x < -10 || proj.x > WORLD_W + 10 || proj.y < -20) {
-                trails.push({ points: [...proj.trail], color: proj.color.replace('0.6', '0.25') });
-                projectiles.splice(i, 1);
-                continue;
-            }
-
-            anyFlying = true;
-        }
-
-        if (hitResult) return hitResult;
-        if (anyFlying) return { result: 'flying' };
-        return { result: 'miss' };
-    }
-
-    // === Explosions ===
-    function addExplosion(x, y, isHit) {
-        explosions.push({
-            x, y,
-            r: 0.5,
-            maxR: isHit ? 8 : 4,
-            growing: true,
-            hit: isHit,
-            alpha: 1
-        });
-    }
-
-    function updateExplosions() {
-        for (let i = explosions.length - 1; i >= 0; i--) {
-            const e = explosions[i];
-            if (e.growing) {
-                e.r += 0.4;
-                if (e.r >= e.maxR) e.growing = false;
-            } else {
-                e.alpha -= 0.03;
-                if (e.alpha <= 0) {
-                    explosions.splice(i, 1);
-                }
-            }
-        }
-    }
-
-    // === AI ===
-    function aiSimulate(tryAngle, trySpeed) {
-        const rad = tryAngle * Math.PI / 180;
-        const vx = -trySpeed * Math.cos(rad);
-        const vy = trySpeed * Math.sin(rad);
-        const muzzle = getMuzzlePos(aiCannon, tryAngle, false);
-        let sx = muzzle.x, sy = muzzle.y;
-        let svx = vx, svy = vy;
-        let closest = Infinity;
-        for (let t = 0; t < 400; t++) {
-            svy -= G * DT;
-            sx += svx * DT;
-            sy += svy * DT;
-            const ddx = sx - playerCannon.x;
-            const ddy = sy - playerCannon.y;
-            const d = Math.sqrt(ddx * ddx + ddy * ddy);
-            if (d < closest) closest = d;
-            if (sy <= getTerrainHeight(sx)) break;
-            if (sx < -10 || sx > WORLD_W + 10) break;
-        }
-        return closest;
-    }
-
-    function aiCalculateShot() {
-        let bestAngle = 45;
-        let bestSpeed = 60;
-        let bestDist = Infinity;
-
-        for (let trySpeed = 20; trySpeed <= 100; trySpeed += 8) {
-            for (let tryAngle = 10; tryAngle <= 80; tryAngle += 4) {
-                const d = aiSimulate(tryAngle, trySpeed);
-                if (d < bestDist) {
-                    bestDist = d;
-                    bestAngle = tryAngle;
-                    bestSpeed = trySpeed;
-                }
-            }
-        }
-
-        const fineAngleMin = Math.max(5, bestAngle - 6);
-        const fineAngleMax = Math.min(85, bestAngle + 6);
-        const fineSpeedMin = Math.max(15, bestSpeed - 10);
-        const fineSpeedMax = Math.min(100, bestSpeed + 10);
-        for (let trySpeed = fineSpeedMin; trySpeed <= fineSpeedMax; trySpeed += 2) {
-            for (let tryAngle = fineAngleMin; tryAngle <= fineAngleMax; tryAngle += 1) {
-                const d = aiSimulate(tryAngle, trySpeed);
-                if (d < bestDist) {
-                    bestDist = d;
-                    bestAngle = tryAngle;
-                    bestSpeed = trySpeed;
-                }
-            }
-        }
-
-        const errorFactor = Math.max(0.04, 0.40 - 0.06 * aiShotCount);
-        const angleError = errorFactor * (Math.random() - 0.5) * 35;
-        const speedError = errorFactor * (Math.random() - 0.5) * 0.5;
-
-        const finalAngle = Math.max(5, Math.min(85, bestAngle + angleError));
-        const finalSpeed = Math.max(15, Math.min(100, bestSpeed * (1 + speedError)));
-
-        return { angle: finalAngle, speed: finalSpeed };
-    }
-
-    // === Quiz system ===
-    function pickQuizQuestion() {
-        // If all questions used, reset
-        if (usedQuizIndices.length >= QUIZ_BANK.length) {
-            usedQuizIndices = [];
-        }
-        let idx;
-        do {
-            idx = Math.floor(Math.random() * QUIZ_BANK.length);
-        } while (usedQuizIndices.includes(idx));
-        usedQuizIndices.push(idx);
-        return QUIZ_BANK[idx];
-    }
-
-    function showQuiz() {
-        gamePhase = 'quiz';
-        fireBtn.disabled = true;
-        quizAnswered = false;
-
-        const question = pickQuizQuestion();
-        quizQuestion.textContent = question.q;
-        quizResult.textContent = '';
-        quizAnswers.innerHTML = '';
-        quizTimerFill.style.width = '100%';
-        quizTimerFill.style.transition = 'none';
-        quizTimerText.textContent = QUIZ_TIME + ' mp';
-        quizTimerText.style.color = '#4fc3f7';
-
-        // Create answer buttons
-        for (let i = 0; i < question.a.length; i++) {
-            const btn = document.createElement('button');
-            btn.textContent = question.a[i];
-            btn.addEventListener('click', () => onQuizAnswer(i, question.correct, question.a));
-            quizAnswers.appendChild(btn);
-        }
-
-        quizOverlay.classList.add('show');
-
-        // Start timer animation — force reflow so 100% is painted before transition starts
-        void quizTimerFill.offsetWidth;
-        quizTimerFill.style.transition = `width ${QUIZ_TIME}s linear`;
-        quizTimerFill.style.width = '0%';
-
-        quizTimeLeft = QUIZ_TIME;
-        quizTickInterval = setInterval(() => {
-            quizTimeLeft--;
-            quizTimerText.textContent = quizTimeLeft + ' mp';
-            if (quizTimeLeft <= 5) quizTimerText.style.color = '#ef5350';
-            if (quizTimeLeft <= 0) {
-                clearInterval(quizTickInterval);
-                quizTickInterval = null;
-                if (!quizAnswered) onQuizTimeout();
-            }
-        }, 1000);
-    }
-
-    function onQuizAnswer(selected, correct, answers) {
-        if (quizAnswered) return;
-        quizAnswered = true;
-
-        if (quizTickInterval) {
-            clearInterval(quizTickInterval);
-            quizTickInterval = null;
-        }
-        // Stop timer bar
-        const currentWidth = quizTimerFill.getBoundingClientRect().width;
-        const parentWidth = quizTimerFill.parentElement.getBoundingClientRect().width;
-        quizTimerFill.style.transition = 'none';
-        quizTimerFill.style.width = (parentWidth > 0 ? (currentWidth / parentWidth * 100) : 0) + '%';
-
-        const buttons = quizAnswers.querySelectorAll('button');
-        buttons[correct].classList.add('correct');
-
-        if (selected === correct) {
-            // Correct! Assign random bonus
-            const bonuses = ['distance', 'trajectory', 'triple'];
-            const bonusNames = {
-                distance: '📏 Távolságjelző (Δx, Δy)',
-                trajectory: '📐 Röppálya-előnézet (1/3)',
-                triple: '💣 Hármas lövedék (±3°)'
-            };
-            activeBonus = bonuses[Math.floor(Math.random() * bonuses.length)];
-            quizResult.style.color = '#43a047';
-            quizResult.textContent = '✅ Helyes! Bónusz: ' + bonusNames[activeBonus];
-        } else {
-            buttons[selected].classList.add('wrong');
-            activeBonus = null;
-            quizResult.style.color = '#ef5350';
-            quizResult.textContent = '❌ Helytelen! Nincs bónusz ebben a fordulóban.';
-        }
-
-        // Disable all buttons
-        buttons.forEach(b => { b.style.pointerEvents = 'none'; });
-
-        setTimeout(closeQuiz, 2000);
-    }
-
-    function onQuizTimeout() {
-        if (quizAnswered) return;
-        quizAnswered = true;
-
-        const buttons = quizAnswers.querySelectorAll('button');
-        // Show correct answer
-        const question = QUIZ_BANK[usedQuizIndices[usedQuizIndices.length - 1]];
-        buttons[question.correct].classList.add('correct');
-        buttons.forEach(b => { b.style.pointerEvents = 'none'; });
-
-        activeBonus = null;
-        quizResult.style.color = '#ffa726';
-        quizResult.textContent = '⏱️ Lejárt az idő! Nincs bónusz.';
-
-        setTimeout(closeQuiz, 2000);
-    }
-
-    function closeQuiz() {
-        quizOverlay.classList.remove('show');
-        gamePhase = 'idle';
-        fireBtn.disabled = false;
-
-        // Update bonus indicator
-        if (activeBonus) {
-            if (activeBonus === 'distance') {
-                updateDistanceBonus();
-            } else {
-                const names = {
-                    trajectory: '📐 Röppálya-előnézet aktív',
-                    triple: '💣 Hármas lövedék aktív'
-                };
-                bonusIndicator.textContent = names[activeBonus];
-            }
-            bonusIndicator.classList.add('active');
-        } else {
-            bonusIndicator.textContent = '';
-            bonusIndicator.classList.remove('active');
-        }
-
-        setStatus('A te köröd! Állítsd be és tüzelj!');
-        draw();
-    }
-
-    // === Game flow ===
-    function setStatus(msg) {
-        statusMsg.textContent = msg;
-    }
-
-    function updateScoreDisplay() {
-        playerScoreEl.textContent = playerScore;
-        aiScoreEl.textContent = aiScore;
-    }
-
-    function newRound() {
-        generateTerrain();
-        placeCannons();
-        aiShotCount = 0;
-        trails = [];
-        explosions = [];
-        projectiles = [];
-        roundNumber++;
-        activeBonus = null;
-        bonusIndicator.textContent = '';
-        bonusIndicator.classList.remove('active');
-        fireBtn.disabled = true;
-        setStatus('Kvízkérdés következik...');
-        draw();
-
-        // Show quiz after a brief delay
-        setTimeout(() => showQuiz(), 600);
-    }
-
-    function newGame() {
-        playerScore = 0;
-        aiScore = 0;
-        roundNumber = 0;
-        usedQuizIndices = [];
-        updateScoreDisplay();
-        overlay.classList.remove('show');
-        newRound();
-    }
-
-    function endGame(playerWon) {
-        gamePhase = 'gameOver';
-        fireBtn.disabled = true;
-        if (playerWon) {
-            endTitle.textContent = '🏆 Győztél!';
-            endTitle.style.color = '#4fc3f7';
-            endSubtitle.textContent = `${playerScore}–${aiScore} arányban győztél!`;
-        } else {
-            endTitle.textContent = '💥 Vesztettél!';
-            endTitle.style.color = '#ef5350';
-            endSubtitle.textContent = `${aiScore}–${playerScore} arányban vesztettél.`;
-        }
-        overlay.classList.add('show');
-    }
-
-    function onProjectileEnd(result, isPlayer, hitProj) {
-        if (result === 'hit') {
-            addExplosion(hitProj.x, hitProj.y, true);
-            // Save remaining projectile trails
-            for (const p of projectiles) {
-                trails.push({ points: [...p.trail], color: p.color.replace('0.6', '0.25') });
-            }
-            projectiles = [];
-
-            // After a hit, nobody fires — go to roundEnd
-            gamePhase = 'roundEnd';
-            fireBtn.disabled = true;
-
-            if (isPlayer) {
-                playerScore++;
-                updateScoreDisplay();
-                if (playerScore >= WIN_SCORE) {
-                    setStatus('Győztél! 🏆');
-                    setTimeout(() => endGame(true), 1200);
-                    return;
-                }
-                setStatus('Találat! 🎯 Új pozíciók...');
-            } else {
-                aiScore++;
-                updateScoreDisplay();
-                if (aiScore >= WIN_SCORE) {
-                    setStatus('Az ellenfél nyert! 💥');
-                    setTimeout(() => endGame(false), 1200);
-                    return;
-                }
-                setStatus('Az ellenfél eltalált! 💥 Új pozíciók...');
-            }
-            setTimeout(() => newRound(), 1800);
-        } else {
-            // Miss — all projectiles already removed from array by updateProjectiles
-            if (isPlayer) {
-                gamePhase = 'aiWait';
-                setStatus('Az ellenfél céloz...');
-                fireBtn.disabled = true;
-                aiShotCount++;
-                const delay = 800 + Math.random() * 1200;
-                setTimeout(aiFireTurn, delay);
-            } else {
-                gamePhase = 'idle';
-                fireBtn.disabled = false;
-                setStatus('A te köröd! Állítsd be és tüzelj!');
-            }
-        }
-    }
-
-    function aiFireTurn() {
-        if (gamePhase !== 'aiWait') return;
-        const shot = aiCalculateShot();
-        aiCannonAngle = shot.angle;
-        gamePhase = 'aiFiring';
-
-        setStatus(`Ellenfél tüzel! (${Math.round(shot.angle)}°, ${Math.round(shot.speed)} m/s)`);
-
-        fireProjectile(aiCannon, shot.angle, shot.speed, false, 'rgba(239,83,80,0.6)');
-    }
-
-    // === Animation loop ===
-    function gameLoop() {
-        animFrameId = requestAnimationFrame(gameLoop);
-
-        if (gamePhase === 'playerFiring' || gamePhase === 'aiFiring') {
-            for (let i = 0; i < 1; i++) {
-                const res = updateProjectiles();
-                if (res.result === 'hit') {
-                    const isPlayer = (gamePhase === 'playerFiring');
-                    onProjectileEnd('hit', isPlayer, res.proj);
-                    break;
-                } else if (res.result === 'miss') {
-                    const isPlayer = (gamePhase === 'playerFiring');
-                    onProjectileEnd('miss', isPlayer, null);
-                    break;
-                }
-                // 'flying' — continue
-            }
-        }
-
-        updateExplosions();
-        draw();
-    }
-
-    // === Event handlers ===
-    angleSlider.addEventListener('input', () => {
-        angleVal.textContent = angleSlider.value + '°';
-    });
-
-    speedSlider.addEventListener('input', () => {
-        speedVal.textContent = speedSlider.value + ' m/s';
-    });
-
-    fireBtn.addEventListener('click', () => {
-        if (gamePhase !== 'idle') return;
-        const angle = parseInt(angleSlider.value);
-        const speed = parseInt(speedSlider.value);
-
-        gamePhase = 'playerFiring';
-        fireBtn.disabled = true;
-        setStatus(`Tüzelés! (${angle}°, ${speed} m/s)`);
-
-        if (activeBonus === 'triple') {
-            fireTriple(playerCannon, angle, speed, true, 'rgba(79,195,247,0.6)');
-        } else {
-            fireProjectile(playerCannon, angle, speed, true, 'rgba(79,195,247,0.6)');
-        }
-    });
-
-    newGameBtn.addEventListener('click', newGame);
-
-    startBtn.addEventListener('click', () => {
-        startOverlay.style.display = 'none';
-        newGame();
-        gameLoop();
-    });
-
-    window.addEventListener('resize', resize);
-
-    document.body.addEventListener('touchmove', (e) => {
-        if (e.target === canvas) e.preventDefault();
-    }, { passive: false });
-
-    // === Init ===
-    generateStars();
-    resize();
-    generateTerrain();
-    placeCannons();
-    draw();
-})();
 </script>
 </body>
 </html>
